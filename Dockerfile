@@ -62,14 +62,6 @@ RUN git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git && \
     make install && \
     cd ../.. && rm -rf SVT-AV1
 
-# Install libvmaf from source
-RUN git clone https://github.com/Netflix/vmaf.git && \
-    cd vmaf/libvmaf && \
-    meson build --buildtype release && \
-    ninja -C build && \
-    ninja -C build install && \
-    cd ../.. && rm -rf vmaf && \
-    ldconfig  # Update the dynamic linker cache
 
 # Manually build and install fdk-aac (since it is not available via apt-get)
 RUN git clone https://github.com/mstorsjo/fdk-aac && \

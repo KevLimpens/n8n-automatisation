@@ -16,3 +16,7 @@ google-cloud-storage
 psutil
 python-docx
 reportlab
+boto3
+Pillow
+matplotlib
+yt-dlp

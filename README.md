@@ -1,206 +1,324 @@
+
 ![Original Logo Symbol](https://github.com/user-attachments/assets/75173cf4-2502-4710-998b-6b81740ae1bd)
 
-# No-Code Architects Toolkit
+# No-Code Architects Toolkit API 
 
-This project is a Flask-based API that provides various media processing services, including audio conversion, video combination, transcription, captioning, and Google Drive upload capabilities.
+Tired of wasting thousands of dollars on API subscriptions to support all your automations? What if there was a free alternative?
 
-## Features
+The 100% FREE No-Code Architects Toolkit API processes different types of media. It is built in Python using Flask.
 
-- Convert media files to MP3
-- Combine multiple videos
-- Transcribe media files
-- Add captions to videos
-- Upload files to Google Drive
-- Adding audio to video file
+## What Can It Do?
 
-## Prerequisites
+The API can convert audio files. It creates transcriptions of content. It translates content between languages. It adds captions to videos. It can do very complicated media processing for content creation. The API can also manage files across multiple cloud services like Google Drive, Amazon S3, Google Cloud Storage, and Dropbox.
 
-- Docker
-- Google Cloud Platform account (for GCS and Google Drive integration)
+You can deploy this toolkit in several ways. It works with Docker. It runs on Google Cloud Platform. It functions on Digital Ocean. You can use it with any system that hosts Docker.
 
-## Environment Variables
+Easily replace services like ChatGPT Whisper, Cloud Convert, Createomate, JSON2Video, PDF(dot)co, Placid and OCodeKit.
 
-The following environment variables are required:
+## 👥 No-Code Architects Community
 
-- `API_KEY`: Your API key for authentication
-- `GCP_SA_CREDENTIALS`: Google Cloud Platform service account credentials (JSON format)
-- `GDRIVE_USER`: Google Drive user email for impersonation
-- `GCP_BUCKET_NAME`: Google Cloud Storage bucket name
+Want help? Join a supportive community and get dedicated tech support.
 
-## Docker Build and Run
+Join the ONLY community where you learn to leverage AI automation and content to grow your business (and streamline your biz).
 
-1. Build the Docker image:
+Who's this for?
+- Coaches and consultants
+- AI Automation agencies
+- SMMA & Content agencies
+- SaaS Startup Founders
 
-```bash
-docker build -t media-processing-api .
-```
+Get courses, community, support, daily calls and more.
 
-2. Run the Docker container:
+Join the **[No-Code Architects Community](https://www.skool.com/no-code-architects)** today!
 
-```bash
-docker run -d -p 8080:8080 \
-  -e API_KEY=your_api_key \
-  -e GCP_SA_CREDENTIALS='{"your":"service_account_json"}' \
-  -e GDRIVE_USER=your_gdrive_user@example.com \
-  -e GCP_BUCKET_NAME=your_gcs_bucket_name \
-  media-processing-api
-```
+---
 
 ## API Endpoints
 
-### Authentication
+Each endpoint is supported by robust payload validation and detailed API documentation to facilitate easy integration and usage.
 
-All endpoints require an `X-API-Key` header for authentication.
+### Audio
 
-### 1. Convert Media to MP3
+- **[`/v1/audio/concatenate`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/audio/concatenate.md)**
+  - Combines multiple audio files into a single audio file.
 
-**Endpoint:** `/media-to-mp3`
+### Code
 
-**Method:** POST
+- **[`/v1/code/execute/python`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/code/execute/execute_python.md)**
+  - Executes Python code remotely and returns the execution results.
 
-**Payload:**
-```json
-{
-  "media_url": "https://example.com/media.mp4",
-  "webhook_url": "https://your-webhook.com/callback",
-  "id": "unique_request_id"
-}
-```
+### FFmpeg
 
-### 2. Combine Videos
+- **[`/v1/ffmpeg/compose`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/ffmpeg/ffmpeg_compose.md)**
+  - Provides a flexible interface to FFmpeg for complex media processing operations.
 
-**Endpoint:** `/combine-videos`
+### Image
 
-**Method:** POST
+- **[`/v1/image/convert/video`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/image/convert/image_to_video.md)**
+  - Transforms a static image into a video with custom duration and zoom effects.
 
-**Payload:**
-```json
-{
-  "video_urls": [
-    {"video_url": "https://example.com/video1.mp4"},
-    {"video_url": "https://example.com/video2.mp4"}
-  ],
-  "webhook_url": "https://your-webhook.com/callback",
-  "id": "unique_request_id"
-}
-```
+### Media
 
-### 3. Transcribe Media
+- **[`/v1/media/convert`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/media/convert/media_convert.md)**
+  - Converts media files from one format to another with customizable codec options.
 
-**Endpoint:** `/transcribe-media`
+- **[`/v1/media/convert/mp3`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/media/convert/media_to_mp3.md)**
+  - Converts various media formats specifically to MP3 audio.
 
-**Method:** POST
+- **[`/v1/BETA/media/download`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/media/download.md)**
+  - Downloads media content from various online sources using yt-dlp.
 
-**Payload:**
-```json
-{
-  "media_url": "https://example.com/media.mp4",
-  "output": "transcript",
-  "webhook_url": "https://your-webhook.com/callback",
-  "id": "unique_request_id"
-}
-```
+- **[`/v1/media/feedback`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/media/feedback.md)**
+  - Provides a web interface for collecting and displaying feedback on media content.
 
-### 4. Caption Video
+- **[`/v1/media/transcribe`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/media/media_transcribe.md)**
+  - Transcribes or translates audio/video content from a provided media URL.
 
-**Endpoint:** `/caption-video`
+- **[`/v1/media/silence`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/media/silence.md)**
+  - Detects silence intervals in a given media file.
 
-**Method:** POST
+- **[`/v1/media/metadata`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/media/metadata.md)**
+  - Extracts comprehensive metadata from media files including format, codecs, resolution, and bitrates.
 
-**Payload:**
-```json
-{
-  "video_url": "https://example.com/video.mp4",
-  "srt": "1\n00:00:01,000 --> 00:00:04,000\nThis is a caption",
-  "options": {},
-  "webhook_url": "https://your-webhook.com/callback",
-  "id": "unique_request_id"
-}
-```
+### S3
 
-### 5. Upload to Google Drive
+- **[`/v1/s3/upload`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/s3/upload.md)**
+  - Uploads files to Amazon S3 storage by streaming directly from a URL.
 
-**Endpoint:** `/gdrive-upload`
+### Toolkit
 
-**Method:** POST
+- **[`/v1/toolkit/authenticate`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/toolkit/authenticate.md)**
+  - Provides a simple authentication mechanism to validate API keys.
 
-**Payload:**
-```json
-{
-  "file_url": "https://example.com/file.pdf",
-  "filename": "uploaded_file.pdf",
-  "folder_id": "google_drive_folder_id",
-  "webhook_url": "https://your-webhook.com/callback",
-  "id": "unique_request_id"
-}
-```
+- **[`/v1/toolkit/test`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/toolkit/test.md)**
+  - Verifies that the NCA Toolkit API is properly installed and functioning.
 
-### 6. Audio Mixing
+- **[`/v1/toolkit/job/status`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/toolkit/job_status.md)**
+  - Retrieves the status of a specific job by its ID.
 
-**Endpoint:** `/audio-mixing`
+- **[`/v1/toolkit/jobs/status`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/toolkit/jobs_status.md)**
+  - Retrieves the status of all jobs within a specified time range.
 
-**Method:** POST
+### Video
 
-**Payload:**
-```json
-{
-  "video_url": "https://example.com/video.mp4",
-  "audio_url": "https://example.com/audio.mp3",
-  "video_vol": 100,
-  "audio_vol": 100,
-  "output_length": "video",
-  "webhook_url": "https://your-webhook.com/callback",
-  "id": "unique_request_id"
-}
-```
+- **[`/v1/video/caption`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/video/caption_video.md)**
+  - Adds customizable captions to videos with various styling options.
 
-## Response Format
+- **[`/v1/video/concatenate`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/video/concatenate.md)**
+  - Combines multiple videos into a single continuous video file.
 
-For asynchronous processing (when `webhook_url` is provided):
+- **[`/v1/video/thumbnail`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/video/thumbnail.md)**
+  - Extracts a thumbnail image from a specific timestamp in a video.
 
-```json
-{
-  "code": 202,
-  "id": "unique_request_id",
-  "job_id": "generated_job_id",
-  "message": "processing"
-}
-```
+- **[`/v1/video/cut`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/video/cut.md)**
+  - Cuts specified segments from a video file with optional encoding settings.
 
-For synchronous processing:
+- **[`/v1/video/split`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/video/split.md)**
+  - Splits a video into multiple segments based on specified start and end times.
 
-```json
-{
-  "code": 200,
-  "response": "result_or_file_url",
-  "message": "success"
-}
-```
+- **[`/v1/video/trim`](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/video/trim.md)**
+  - Trims a video by keeping only the content between specified start and end times.
 
-## Webhook Callback Format
+---
 
-```json
-{
-  "endpoint": "/endpoint-name",
-  "code": 200,
-  "id": "unique_request_id",
-  "job_id": "generated_job_id",
-  "response": "result_or_file_url",
-  "message": "success"
-}
-```
+## Docker Build and Run
 
-## Error Handling
+### Build the Docker Image
 
-In case of errors, the API will return appropriate HTTP status codes along with error messages in the response body.
+   ```bash
+   docker build -t no-code-architects-toolkit .
+   ```
 
-## Notes
+### General Environment Variables
 
-- All endpoints support both synchronous and asynchronous processing.
-- For asynchronous processing, provide a `webhook_url` in the request payload.
-- The API uses Google Cloud Storage for storing processed files when `GCP_BUCKET_NAME` is set.
-- Google Drive integration requires proper setup of service account credentials and user impersonation.
+#### `API_KEY`
+- **Purpose**: Used for API authentication.
+- **Requirement**: Mandatory.
+
+---
+
+### S3-Compatible Storage Environment Variables
+
+#### `S3_ENDPOINT_URL`
+- **Purpose**: Endpoint URL for the S3-compatible service.
+- **Requirement**: Mandatory if using S3-compatible storage.
+
+#### `S3_ACCESS_KEY`
+- **Purpose**: The access key for the S3-compatible storage service.
+- **Requirement**: Mandatory if using S3-compatible storage.
+
+#### `S3_SECRET_KEY`
+- **Purpose**: The secret key for the S3-compatible storage service.
+- **Requirement**: Mandatory if using S3-compatible storage.
+
+#### `S3_BUCKET_NAME`
+- **Purpose**: The bucket name for the S3-compatible storage service.
+- **Requirement**: Mandatory if using S3-compatible storage.
+
+#### `S3_REGION`
+- **Purpose**: The region for the S3-compatible storage service.
+- **Requirement**: Mandatory if using S3-compatible storage, "None" is acceptible for some s3 providers.
+
+---
+
+### Google Cloud Storage (GCP) Environment Variables
+
+#### `GCP_SA_CREDENTIALS`
+- **Purpose**: The JSON credentials for the GCP Service Account.
+- **Requirement**: Mandatory if using GCP storage.
+
+#### `GCP_BUCKET_NAME`
+- **Purpose**: The name of the GCP storage bucket.
+- **Requirement**: Mandatory if using GCP storage.
+
+---
+
+### Performance Tuning Variables
+
+#### `MAX_QUEUE_LENGTH`
+- **Purpose**: Limits the maximum number of concurrent tasks in the queue.
+- **Default**: 0 (unlimited)
+- **Recommendation**: Set to a value based on your server resources, e.g., 10-20 for smaller instances.
+
+#### `GUNICORN_WORKERS`
+- **Purpose**: Number of worker processes for handling requests.
+- **Default**: Number of CPU cores + 1
+- **Recommendation**: 2-4× number of CPU cores for CPU-bound workloads.
+
+#### `GUNICORN_TIMEOUT`
+- **Purpose**: Timeout (in seconds) for worker processes.
+- **Default**: 30
+- **Recommendation**: Increase for processing large media files (e.g., 300-600).
+
+---
+
+### Storage Configuration
+
+#### `LOCAL_STORAGE_PATH`
+- **Purpose**: Directory for temporary file storage during processing.
+- **Default**: /tmp
+- **Recommendation**: Set to a path with sufficient disk space for your expected workloads.
+
+### Notes
+- Ensure all required environment variables are set based on the storage provider in use (GCP or S3-compatible). 
+- Missing any required variables will result in errors during runtime.
+- Performance variables can be tuned based on your workload and available resources.
+
+### Run the Docker Container:
+
+   ```bash
+   docker run -d -p 8080:8080 \
+     # Authentication (required)
+     -e API_KEY=your_api_key \
+     
+     # Cloud storage provider (choose one)
+
+     # s3
+     #
+     #-e S3_ENDPOINT_URL=https://nyc3.digitaloceanspaces.com \
+     #-e S3_ACCESS_KEY=your_access_key \
+     #-e S3_SECRET_KEY=your_secret_key \
+     #-e S3_BUCKET_NAME=your_bucket_name \
+     #-e S3_REGION=nyc3 \
+
+     # Or
+
+     # GCP Storage
+     #
+     #-e GCP_SA_CREDENTIALS='{"your":"service_account_json"}' \
+     #-e GCP_BUCKET_NAME=your_gcs_bucket_name \
+     
+     # Local storage configuration (optional)
+     -e LOCAL_STORAGE_PATH=/tmp \
+     
+     # Performance tuning (optional)
+     -e MAX_QUEUE_LENGTH=10 \
+     -e GUNICORN_WORKERS=4 \
+     -e GUNICORN_TIMEOUT=300 \
+     
+     no-code-architects-toolkit
+   ```
+
+---
+
+## Installation Guides
+
+This API can be deployed to various cloud platforms:
+
+### Digital Ocean
+
+The Digital Ocean App platform is pretty easy to set up and get going, but it can cost more then other cloud providers.
+
+#### Important: Long running processes
+
+You need to use the "webhook_url" (for any request that exceeds 1 min) in your API payload to avoid timeouts due to CloudFlair proxy timeout.
+
+If you use the webhook_url, there is no limit to the processing length.
+
+- [Digital Ocean App Platform Installation Guide](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/cloud-installation/do.md) - Deploy the API on Digital Ocean App Platform
+
+### Google Cloud RUN Platform
+
+Sometimes difficult for people to install (especially on Google Business Workspaces), lots of detailed security exceptions.
+
+However this is one of the cheapest options with great performance because you're only charged when the NCA Toolkit is processesing a request.
+
+Outside of that you are not charged.
+
+#### Imporatnt: Requests exceeding 5+ minutes can be problemactic 
+
+GCP Run will terminate long rununing processes, which can happen when processing larger files (whether you use the webhook_url or not).
+
+However, when your processing times are consistant lower than 5 minutes (e.g. you're only process smaller files), it works great! The performance is also great and as soon as you stop making requests you stop paying.
+
+They also have a GPU option that might be usable for better performance (untested).
+
+- [Google Cloud RUN Platform (GCP) Installation Guide](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docs/cloud-installation/gcp.md) - Deploy the API on Google Cloud Run
+
+### General Docker Instructions
+
+You can use these instructions to deploy the NCA Toolkit to any linux server (on any platform)
+
+You can more easily control performance and cost this way, but requires more technical skill to get up and running (not much though).
+
+- [General Docker Compose Installation Guide](https://github.com/stephengpope/no-code-architects-toolkit/blob/main/docker-compose.md)
+
+## Testing the API
+
+1. Install the **[Postman Template](https://bit.ly/49Gkhl)** on your computer
+2. Import the API example requests from the template
+3. Configure your environment variables in Postman:
+   - `base_url`: Your deployed API URL
+   - `x-api-key`: Your API key configured during installation
+4. Use the example requests to validate that the API is functioning correctly
+5. Use the **[NCA Toolkit API GPT](https://bit.ly/4feDDk4)** to explore additional features
+
+---
+
+## Contributing To the NCA Toolkit API
+
+We welcome contributions from the public! If you'd like to contribute to this project, please follow these steps:
+
+1. Fork the repository
+2. Create a new branch for your feature or bug fix
+3. Make your changes
+4. Submit a pull request to the "build" branch
+
+### Pull Request Process
+
+1. Ensure any install or build dependencies are removed before the end of the layer when doing a build.
+2. Update the README.md with details of changes to the interface, this includes new environment variables, exposed ports, useful file locations and container parameters.
+
+Thank you for your contributions!
+
+---
+
+## How To Get Support
+
+Get courses, community, support daily calls and more.
+
+Join the **[No-Code Architects Community](https://www.skool.com/no-code-architects)** today!
 
 ## License
 
-[MIT License](LICENSE)
+This project is licensed under the [GNU General Public License v2.0 (GPL-2.0)](LICENSE).

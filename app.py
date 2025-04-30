@@ -198,8 +198,10 @@ def create_app():
     from routes.authenticate import auth_bp
     from routes.caption_video import caption_bp 
     from routes.extract_keyframes import extract_keyframes_bp
+    from routes.doc_to_pdf import doc_to_pdf_bp
     from routes.image_to_video import image_to_video_bp
-    
+
+
 
     # Register blueprints
     app.register_blueprint(convert_bp)
@@ -210,10 +212,10 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(caption_bp)
     app.register_blueprint(extract_keyframes_bp)
+    app.register_blueprint(doc_to_pdf_bp)
     app.register_blueprint(image_to_video_bp)
     
     
-
     # version 1.0
     from routes.v1.ffmpeg.ffmpeg_compose import v1_ffmpeg_compose_bp
     from routes.v1.media.media_transcribe import v1_media_transcribe_bp

@@ -9,12 +9,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-
 
 import os
 import logging
@@ -23,11 +17,16 @@ import threading
 import requests
 import uuid
 import json
-from google.oauth2.service_account import Credentials
-from google.auth.transport.requests import Request
 from datetime import datetime
 import time
 import psutil
+
+from googleapiclient.discovery import build
+from google.oauth2.service_account import Credentials
+from google.auth.transport.requests import Request
+from googleapiclient.http import MediaFileUpload
+
+from services.file_management import download_file
 from services.authentication import authenticate
 from app_utils import validate_payload, queue_task_wrapper
 
@@ -39,6 +38,7 @@ logger = logging.getLogger(__name__)
 gdrive_upload_bp = Blueprint('gdrive_upload', __name__)
 
 # Environment variables
+STORAGE_PATH = "/app/files/"
 GCP_SA_CREDENTIALS = os.getenv('GCP_SA_CREDENTIALS')
 GDRIVE_USER = os.getenv('GDRIVE_USER')
 
@@ -51,16 +51,13 @@ class UploadProgress:
         self.start_time = time.time()
         self.lock = threading.Lock()
         self.last_logged_percentage = 0
-        self.last_logged_resource_percentage = 0  # For memory/disk logging every 5%
+        self.last_logged_resource_percentage = 0
 
 # Global list to keep track of active uploads
 active_uploads = []
 uploads_lock = threading.Lock()
 
 def get_access_token():
-    """
-    Retrieves an access token for Google APIs using service account credentials.
-    """
     credentials_info = json.loads(GCP_SA_CREDENTIALS)
     credentials = Credentials.from_service_account_info(
         credentials_info,
@@ -69,13 +66,9 @@ def get_access_token():
     delegated_credentials = credentials.with_subject(GDRIVE_USER)
     if not delegated_credentials.valid or delegated_credentials.expired:
         delegated_credentials.refresh(Request())
-    access_token = delegated_credentials.token
-    return access_token
+    return delegated_credentials.token
 
 def initiate_resumable_upload(filename, folder_id, mime_type='application/octet-stream'):
-    """
-    Initiates a resumable upload session with Google Drive and returns the upload URL.
-    """
     url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable'
     headers = {
         'Authorization': f'Bearer {get_access_token()}',
@@ -88,20 +81,14 @@ def initiate_resumable_upload(filename, folder_id, mime_type='application/octet-
     }
     response = requests.post(url, headers=headers, data=json.dumps(metadata))
     response.raise_for_status()
-    upload_url = response.headers['Location']
-    return upload_url
+    return response.headers['Location']
 
 def upload_file_in_chunks(file_url, upload_url, total_size, job_id, chunk_size):
-    """
-    Uploads the file to Google Drive in chunks by streaming data directly from the source URL.
-    """
     bytes_uploaded = 0
     max_retries = 5
-    retry_delay = 5  # seconds
-
+    retry_delay = 5
     progress = UploadProgress(job_id, total_size)
 
-    # Add progress to active_uploads
     with uploads_lock:
         active_uploads.append(progress)
 
@@ -126,19 +113,16 @@ def upload_file_in_chunks(file_url, upload_url, total_size, job_id, chunk_size):
                                 data=chunk
                             )
                             if upload_response.status_code in (200, 201):
-                                # Upload complete
                                 logger.info(f"Job {job_id}: Upload complete.")
                                 with progress.lock:
                                     progress.bytes_uploaded = end + 1
                                 return upload_response.json()['id']
                             elif upload_response.status_code == 308:
-                                # Resumable upload incomplete
                                 bytes_uploaded = end + 1
                                 with progress.lock:
                                     progress.bytes_uploaded = bytes_uploaded
-                                break  # Break retry loop and continue with next chunk
+                                break
                             else:
-                                # Handle unexpected status codes
                                 logger.error(f"Job {job_id}: Unexpected status code: {upload_response.status_code}")
                                 raise Exception(f"Upload failed with status code {upload_response.status_code}")
                         except requests.exceptions.RequestException as e:
@@ -146,15 +130,10 @@ def upload_file_in_chunks(file_url, upload_url, total_size, job_id, chunk_size):
                             if attempt < max_retries - 1:
                                 logger.info(f"Job {job_id}: Retrying upload chunk after {retry_delay} seconds...")
                                 time.sleep(retry_delay)
-                                continue
                             else:
                                 logger.error(f"Job {job_id}: Max retries reached. Upload failed.")
                                 raise
-                    else:
-                        # If we exhausted retries, exit the function
-                        raise Exception("Failed to upload chunk after multiple retries.")
     finally:
-        # Remove progress from active_uploads
         with uploads_lock:
             if progress in active_uploads:
                 active_uploads.remove(progress)
@@ -188,14 +167,12 @@ def gdrive_upload(job_id, data):
         filename = data['filename']
         folder_id = data['folder_id']
         mime_type = data.get('mime_type', 'application/octet-stream')
-        chunk_size = data.get('chunk_size', 5 * 1024 * 1024)  # Default to 5 MB
+        chunk_size = data.get('chunk_size', 5 * 1024 * 1024)
 
-        # Get the total size of the file
         try:
             head_response = requests.head(file_url, allow_redirects=True, timeout=30)
             head_response.raise_for_status()
             total_size = int(head_response.headers.get('Content-Length', 0))
-            
             get_response = requests.get(file_url, stream=True, timeout=30)
             get_response.raise_for_status()
             total_size = int(get_response.headers.get('Content-Length', 0))
@@ -210,11 +187,9 @@ def gdrive_upload(job_id, data):
 
         logger.info(f"Job {job_id}: File size determined: {total_size} bytes")
 
-        # Initiate upload session
         upload_url = initiate_resumable_upload(filename, folder_id, mime_type)
         logger.info(f"Job {job_id}: Resumable upload session initiated with chunk size {chunk_size} bytes.")
 
-        # Upload file in chunks
         file_id = upload_file_in_chunks(file_url, upload_url, total_size, job_id, chunk_size)
 
         return file_id, "/gdrive-upload", 200
@@ -224,22 +199,16 @@ def gdrive_upload(job_id, data):
         return str(e), "/gdrive-upload", 500
 
 def log_system_resources():
-    """
-    Logs system resource usage and upload progress at regular intervals.
-    """
     while True:
-        # Get memory and disk usage
         memory_info = psutil.virtual_memory()
         disk_info = psutil.disk_usage('/')
 
         with uploads_lock:
             for progress in active_uploads:
                 with progress.lock:
-                    # Calculate the percentage uploaded
                     percentage = (progress.bytes_uploaded / progress.total_size) * 100 if progress.total_size > 0 else 0
                     elapsed_time = time.time() - progress.start_time
 
-                    # Log upload progress every 1%
                     if int(percentage) >= progress.last_logged_percentage + 1:
                         progress.last_logged_percentage = int(percentage)
                         logger.info(
@@ -247,17 +216,14 @@ def log_system_resources():
                             f"({percentage:.2f}%), Elapsed Time: {int(elapsed_time)} seconds"
                         )
 
-                    # Log system resource usage every 5%
                     if int(percentage) >= progress.last_logged_resource_percentage + 5:
                         progress.last_logged_resource_percentage = int(percentage)
                         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         logger.info(f"[{current_time}] Memory Usage: {memory_info.percent}% used")
                         logger.info(f"[{current_time}] Disk Usage: {disk_info.percent}% used")
 
-        # Sleep for 1 second before the next update
         time.sleep(1)
 
-# Start the resource logging in a separate thread
 resource_logging_thread = threading.Thread(
     target=log_system_resources,
     daemon=True

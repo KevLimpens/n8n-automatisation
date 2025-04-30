@@ -14,23 +14,24 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-
-
 import os
 import uuid
 import requests
+import time
 from urllib.parse import urlparse, parse_qs
 import mimetypes
 
+STORAGE_PATH = "/app/files/"  # Optioneel aanpasbaar
+
 def get_extension_from_url(url):
     """Extract file extension from URL or content type.
-    
+
     Args:
         url (str): The URL to extract the extension from
-        
+
     Returns:
         str: The file extension including the dot (e.g., '.jpg')
-        
+
     Raises:
         ValueError: If no valid extension can be determined from the URL or content type
     """
@@ -52,14 +53,12 @@ def get_extension_from_url(url):
     except:
         pass
 
-    # If we can't determine the extension, raise an error
     raise ValueError(f"Could not determine file extension from URL: {url}")
 
 def download_file(url, storage_path="/tmp/"):
     """Download a file from URL to local storage."""
-    # Create storage directory if it doesn't exist
     os.makedirs(storage_path, exist_ok=True)
-    
+
     file_id = str(uuid.uuid4())
     extension = get_extension_from_url(url)
     local_filename = os.path.join(storage_path, f"{file_id}{extension}")
@@ -78,7 +77,6 @@ def download_file(url, storage_path="/tmp/"):
         if os.path.exists(local_filename):
             os.remove(local_filename)
         raise e
-
 
 def delete_old_files():
     now = time.time()

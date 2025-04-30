@@ -13,4 +13,10 @@ google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client
 google-cloud-storage
-
+psutil
+python-docx
+reportlab
+boto3
+Pillow
+matplotlib
+yt-dlp

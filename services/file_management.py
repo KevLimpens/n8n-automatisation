@@ -1,35 +1,82 @@
+# Copyright (c) 2025 Stephen G. Pope
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 import os
 import uuid
 import requests
+import time
 from urllib.parse import urlparse, parse_qs
+import mimetypes
+
+STORAGE_PATH = "/app/files/"  # Optioneel aanpasbaar
+
+def get_extension_from_url(url):
+    """Extract file extension from URL or content type.
+
+    Args:
+        url (str): The URL to extract the extension from
+
+    Returns:
+        str: The file extension including the dot (e.g., '.jpg')
+
+    Raises:
+        ValueError: If no valid extension can be determined from the URL or content type
+    """
+    # First try to get extension from URL
+    parsed_url = urlparse(url)
+    path = parsed_url.path
+    if path:
+        ext = os.path.splitext(path)[1].lower()
+        if ext:
+            return ext
+
+    # If no extension in URL, try to determine from content type
+    try:
+        response = requests.head(url, allow_redirects=True)
+        content_type = response.headers.get('content-type', '').split(';')[0]
+        ext = mimetypes.guess_extension(content_type)
+        if ext:
+            return ext.lower()
+    except:
+        pass
+
+    raise ValueError(f"Could not determine file extension from URL: {url}")
 
 def download_file(url, storage_path="/tmp/"):
-    # Parse the URL to extract the file ID from the query parameters
-    parsed_url = urlparse(url)
-    query_params = parse_qs(parsed_url.query)
-    
-    # Use the 'id' parameter as the filename if it exists
-    #file_id = query_params.get('id', [None])[0]
-    file_id = uuid.uuid4().hex[:6];
-    #if not file_id:
-    #    raise ValueError("Invalid URL: 'id' parameter not found in the URL")
-    
-    # Ensure the storage directory exists
-    if not os.path.exists(storage_path):
-        os.makedirs(storage_path)
-    
-    # Use the file ID as the filename and save it in the specified storage path
-    local_filename = os.path.join(storage_path, f"{file_id}.mp4")  # Assuming mp4; adjust extension if needed
-    
-    # Download the file
-    response = requests.get(url, stream=True)
-    response.raise_for_status()
-    
-    with open(local_filename, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=8192):
-            f.write(chunk)
-    
-    return local_filename
+    """Download a file from URL to local storage."""
+    os.makedirs(storage_path, exist_ok=True)
+
+    file_id = str(uuid.uuid4())
+    extension = get_extension_from_url(url)
+    local_filename = os.path.join(storage_path, f"{file_id}{extension}")
+
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+
+        with open(local_filename, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+
+        return local_filename
+    except Exception as e:
+        if os.path.exists(local_filename):
+            os.remove(local_filename)
+        raise e
 
 def delete_old_files():
     now = time.time()
